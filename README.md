@@ -2,11 +2,17 @@
 
 a simple load balanced torsocks service, a fork of the excellent [Iglesys347/castor](https://github.com/Iglesys347/castor)
 
+creates a defined number of backend tor circuits, leveraging haproxy to round-robin requests
+
+tl;dr - one ingress proxy, multiple exit circuits
+
 ---
 
 ## configuration
 
-set the number of tor instances to be created by altering  `services.tor.deploy.replicas` within `docker-compose.yml`
+set the number of tor instances to be created by altering `SOCKS` within `.env`
+
+alternativley see `services.tor.deploy.replicas` within `docker-compose.yml`
 ## runtime
 
 ```shell

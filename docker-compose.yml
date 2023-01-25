@@ -8,7 +8,8 @@ services:
     expose:
       - 9050
     deploy:
-      replicas: 2
+      replicas: ${SOCKS:-5}
+
   haproxy:
     image: haproxy:alpine
     restart: always
