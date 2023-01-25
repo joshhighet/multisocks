@@ -1,9 +1,13 @@
 SocksPort 0.0.0.0:9050
 DataDirectory /var/lib/tor
+
+## tracing
 # Log notice syslog
-## for traffic mangling
+
+## traffic mangling
 # SocksPolicy accept 172.17.0.0/16
 # SocksPolicy reject *
-## for nyx debugging
+
+## allow nyx debugging
 # ControlPort 9051
 # CookieAuthentication 1
