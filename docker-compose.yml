@@ -2,9 +2,7 @@ version: "3.6"
 
 services:
   tor:
-    build:
-      context: ./tor
-      dockerfile: dockerfile
+    image: ghcr.io/joshhighet/multisocks/tor:latest
     networks:
       - net_tor
     expose:
