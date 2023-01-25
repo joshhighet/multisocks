@@ -17,7 +17,7 @@ services:
     depends_on:
       tor:
         condition: service_started
-      haproxy-conf-generator:
+      haconfig-generator:
         condition: service_completed_successfully
     ports:
       - 8080:8080
@@ -25,7 +25,7 @@ services:
       - haproxy_conf:/usr/local/etc/haproxy
     networks:
       - net_tor
-  haproxy-conf-generator:
+  haconfig-generator:
     build: ./haconfig
     command: python gen_conf.py
     depends_on:
