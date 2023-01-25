@@ -6,7 +6,7 @@ a simple load balanced torsocks service, a fork of the excellent [Iglesys347/cas
 
 ## configuration
 
-set the numder of tor instances to be created by altering  `services.tor.deploy.replicas` within `docker-compose.yml`
+set the number of tor instances to be created by altering  `services.tor.deploy.replicas` within `docker-compose.yml`
 ## runtime
 
 ```shell
