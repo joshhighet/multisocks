@@ -4,7 +4,15 @@ a simple load balanced torsocks service, a fork of the excellent [Iglesys347/cas
 
 creates a defined number of backend tor circuits, leveraging haproxy to round-robin requests
 
-tl;dr - one ingress proxy, multiple exit circuits
+tl;dr - one ingress proxy, infinite exit circuits
+
+```mermaid
+graph TD
+    A[client] -->|socks5:// *:8080| B(haproxy)
+    B --> D[tor relay 1]
+    B --> E[tor relay 2]
+    B --> F[tor relay 3]    
+```
 
 ---
 
