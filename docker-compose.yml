@@ -4,14 +4,13 @@ services:
   tor:
     build:
       context: ./tor
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     networks:
       - net_tor
     expose:
       - 9050
-      - 9080
-    scale: 5
-
+    deploy:
+      replicas: 2
   haproxy:
     image: haproxy:alpine
     restart: always
@@ -21,15 +20,13 @@ services:
       haproxy-conf-generator:
         condition: service_completed_successfully
     ports:
-      - ${PROXY_PORT}:8080
+      - 8080:8080
     volumes:
       - haproxy_conf:/usr/local/etc/haproxy
     networks:
       - net_tor
-    env_file: ./.env
-
   haproxy-conf-generator:
-    build: ./conf-generator
+    build: ./haconfig
     command: python gen_conf.py
     depends_on:
       tor:
@@ -39,11 +36,9 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock
     networks:
       - net_tor
-    env_file: ./.env
 
 volumes:
   haproxy_conf:
-
 
 networks:
   net_tor:
