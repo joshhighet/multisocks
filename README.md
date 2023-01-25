@@ -21,7 +21,7 @@ cd multisocks
 docker compose logs --timestamps --follow
 ```
 
-_for further tracing, modify `Log` within `tor/torrc` or enable the `ControlPort` and leverage [nyx](https://nyx.torproject.org)
+_for further tracing, modify `Log` within `tor/torrc` or enable the `ControlPort` and leverage [nyx](https://nyx.torproject.org)_
 
 ## testing
 
