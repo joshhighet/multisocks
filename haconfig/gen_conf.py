@@ -2,7 +2,6 @@ import os
 import docker
 from jinja2 import Template
 
-
 def get_tor_ips():
     client = docker.DockerClient(base_url='unix://tmp/docker.sock')
     network = client.networks.get("net_tor")
