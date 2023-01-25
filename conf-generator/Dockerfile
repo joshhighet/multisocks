@@ -1,5 +1,5 @@
 FROM python
-
+LABEL org.opencontainers.image.source https://github.com/joshhighet/multisocks/haconfig
 WORKDIR /usr/app/
 
 RUN pip install docker jinja2
