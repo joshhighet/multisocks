@@ -8,6 +8,9 @@ DataDirectory /var/lib/tor
 # SocksPolicy accept 172.17.0.0/16
 # SocksPolicy reject *
 
-## allow nyx debugging
-# ControlPort 9051
+## allow nyx debugging or healthchecks
+ControlPort 0.0.0.0:9051
 # CookieAuthentication 1
+
+# tor --hash-password "log4j2.enableJndiLookup"
+HashedControlPassword 16:FEDC93554309AE5F608FB157AD5B85303A690B1A90D162EDCCEB929305

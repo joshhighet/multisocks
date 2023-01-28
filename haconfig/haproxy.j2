@@ -1,8 +1,10 @@
 global
+  external-check
+  insecure-fork-wanted
   log stdout format raw local0 info
 
 defaults
-  mode {{proxy_type}}
+  mode tcp
   timeout client 10s
   timeout connect 5s
   timeout server 10s
@@ -15,8 +17,11 @@ frontend loadbalancer
 
 backend tors
   balance roundrobin
+  option external-check
+  external-check path "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  external-check command "/usr/local/etc/haproxy/check-tor.sh"
   {%- for host in tor_hosts %}
-  server tor{{loop.index}} {{host}}:{{tor_port}} check
+  server tor{{loop.index}} {{host}}:9050 check fall 5 rise 2 inter 7s
   {%- endfor %}
 
 

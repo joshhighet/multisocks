@@ -2,11 +2,13 @@ version: "3.6"
 
 services:
   tor:
-    image: ghcr.io/joshhighet/multisocks/tor:latest
+    build: ./tor
+    #image: ghcr.io/joshhighet/multisocks/tor:latest
     networks:
       - net_tor
     expose:
       - 9050
+      - 9051
     deploy:
       replicas: ${SOCKS:-5}
 
@@ -22,8 +24,10 @@ services:
       - 8080:8080
     volumes:
       - haproxy_conf:/usr/local/etc/haproxy
+      - ./check-tor.sh:/usr/local/etc/haproxy/check-tor.sh
     networks:
       - net_tor
+    
   haconfig-generator:
     build: ./haconfig
     command: python gen_conf.py
