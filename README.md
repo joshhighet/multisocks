@@ -2,7 +2,7 @@
 
 multisocks is a tool for running frameworks such as spiders or scanners against infrastructure (onion services) on the tor network
 
-simply, it is a SOCKS5 proxy that can speed up other tools by spawning up to 4095 tor circuits of which inbound requests can be distributed across
+it is a tcp load balanced SOCKS5 proxy that can speed up other tools by spawning up to 4095 tor circuits of which inbound requests can be distributed across
 
 it can significantly cut-down load times for correctly scaled applications by doing the following
 
