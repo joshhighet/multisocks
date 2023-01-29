@@ -11,11 +11,21 @@ defaults
   log global
 
 frontend loadbalancer
+  mode tcp
   bind :8080
   use_backend tors
 
+listen stats
+    bind :1337
+    mode http
+    stats enable
+    stats hide-version
+    stats realm Haproxy\ Statistics
+    stats uri /
+    stats admin if LOCALHOST
+
 backend tors
-  balance roundrobin
+  balance leastconn
   option external-check
   external-check path "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   external-check command "/usr/local/etc/haproxy/check-tor.sh"
