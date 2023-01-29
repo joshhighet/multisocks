@@ -2,16 +2,37 @@
 
 a simple load balanced torsocks service, a fork of the excellent [Iglesys347/castor](https://github.com/Iglesys347/castor)
 
-creates a defined number of backend tor circuits, leveraging haproxy to round-robin requests
+creates an infinite number of backend tor circuits, leveraging haproxy to round-robin requests
 
-tl;dr - one ingress proxy, infinite exit circuits
+multisocks will expose a SOCKS5 proxy on `:8080` and a statistics report on haproxy at `:1337`
 
 ```mermaid
-graph TD
-    A[client] -->|socks5:// *:8080| B(haproxy)
-    B --> D[tor relay 1]
-    B --> E[tor relay 2]
-    B --> F[tor relay 3]    
+flowchart TB
+    sclient[proxy client :8080]-->front
+    stat{{stats :1337}}-->front
+    front[haproxy]
+    style sclient fill:#f9f,stroke:#333,stroke-width:2px
+    style stat fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+    subgraph scaler[x scaled instances]
+        subgraph tor1 [tor]
+        ctrl[controlport]
+        sock[socksport]
+        end
+        subgraph tor2 [tor]
+        ctrl2[controlport]
+        sock2[socksport]
+        end
+        subgraph tor3 [tor]
+        ctrl3[controlport]
+        sock3[socksport]
+        end
+    end
+    front<-->sock
+    front-. healthcheck .-> ctrl
+    front<-->sock2
+    front-. healthcheck .-> ctrl2
+    front<-->sock3
+    front-. healthcheck .-> ctrl3
 ```
 
 ---
@@ -20,7 +41,7 @@ graph TD
 
 set the number of tor instances to be created by altering `SOCKS` within `.env`
 
-alternativley see `services.tor.deploy.replicas` within `docker-compose.yml`
+_reference `services.tor.deploy.replicas` within `docker-compose.yml`_
 ## runtime
 
 ```shell
@@ -28,14 +49,16 @@ git clone https://github.com/joshhighet/multisocks
 docker compose --file multisocks/docker-compose.yml up --detach
 ```
 
+after bringing up the containerset - you will need to wait for tor to build circuits before the proxy will accept connections
+
+to view the status of haproxy, navigate to `your-multisocks-host:1337` in a browser
+
 ## debugging
 
 ```shell
 cd multisocks
 docker compose logs --timestamps --follow
 ```
-
-_for further tracing, modify `Log` within `tor/torrc` or enable the `ControlPort` and leverage [nyx](https://nyx.torproject.org)_
 
 ## testing
 
