@@ -3,7 +3,7 @@ import docker
 import platform
 from jinja2 import Template
 
-def get_tor_ips():
+def get_dockernet_hostnames():
     if platform.system() == "Darwin":
         client = docker.DockerClient(base_url='unix://var/run/docker.sock')
     else:
@@ -17,18 +17,17 @@ def get_tor_ips():
         and (container.attrs["NetworkSettings"]["Networks"]["net_tor"]["NetworkID"] == net_tor_id)
         and (container.attrs["Config"]["User"] == "tor")
     ]
-    ip_addrs = [container.attrs['NetworkSettings']['Networks']["net_tor"]["IPAddress"]
-                for container in containers]
-    return ip_addrs
+    dns = [container.attrs['NetworkSettings']['Networks']["net_tor"]['Aliases'][0]
+           for container in containers]
+    return dns
 
 if __name__ == "__main__":
-    tor_ips = get_tor_ips()
+    cihosts = get_dockernet_hostnames()
     with open("haproxy.j2", "r") as file:
-        conf = Template(file.read()).render(tor_hosts=tor_ips)
+        conf = Template(file.read()).render(tor_hosts=cihosts)
     if platform.system() == "Darwin":
         outfile = "haproxy-valid.cfg"
     else:
         outfile = '/usr/local/etc/haproxy/haproxy.cfg'
     with open(outfile, "w") as file:
         file.write(conf)
-
