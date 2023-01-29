@@ -1,12 +1,12 @@
 # multisocks
 
-multisocks is a tool for running frameworks such as spiders or scanners against infrastructure (onion services) on the tor network.
+multisocks is a tool for running frameworks such as spiders or scanners against infrastructure (onion services) on the tor network
 
-simply, it is a SOCKS5 proxy that can speed up other tools by spawning an infinite number of tor circuits of which inbound requests can be distributed across.
+simply, it is a SOCKS5 proxy that can speed up other tools by spawning up to 4095 tor circuits of which inbound requests can be distributed across
 
 it can significantly cut-down load times for correctly scaled applications by doing the following
 
-- creating an infinite number of tor circuits
+- creating a very large number of tor circuits
 - surfacing a single-ingress SOCKS5 proxy
 - adequatley load-balance backend connections
 - performing health-checks against each backend tor cirtuit
@@ -89,9 +89,9 @@ docker exec -it -u root multisocks-haproxy ash
 
 ## testing
 
-this is a short script to check multisocks is running correctly. it assumes multisocks is running locally and makes ten requests to Cloudflare.
+this is a short script to check multisocks is running correctly. 
 
-you should see a new IP address in each response - this is assuming you have at-least ten circuits to leverage, as ten requests are made!
+> it assumes multisocks is running locally and makes ten requests to Cloudflare, returning the requested IP for each request
 
 ```shell
 for i in {1..10}
@@ -100,13 +100,12 @@ for i in {1..10}
 done
 ```
 
-to test against hidden services, simple replace the cloudflare URL with an onion service.
+to test against hsdir resolutions, simply replace the cloudflare URL with an onion service
 
-to find some online onion services, go browse around or use the below for starters
+> to find some online onion services, go browse around or use the below for starters
 
 ```shell
 curl -sL ransomwhat.telemetry.ltd/groups \
 | jq -r '.[].locations[] | select(.available==true) | .slug' \
 | head -n 10
 ```
-
