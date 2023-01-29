@@ -2,6 +2,8 @@
 
 multisocks is a tool for running frameworks such as spiders or scanners against infrastructure (onion services) on the tor network.
 
+simply, it is a SOCKS5 proxy that can speed up other tools by spawning an infinite number of tor circuits of which inbound requests can be distributed across.
+
 it can significantly cut-down load times for correctly scaled applications by doing the following
 
 - creating an infinite number of tor circuits
@@ -12,7 +14,7 @@ it can significantly cut-down load times for correctly scaled applications by do
 
 _multisocks is a fork/derivative of the excellent [Iglesys347/castor](https://github.com/Iglesys347/castor)_
 
-multisocks will expose a SOCKS5 proxy on `:8080` and a statistics report on `:1337`
+multisocks exposes a SOCKS5 proxy on `:8080` and a statistics report on `:1337` by default.
 
 ```mermaid
 flowchart TB
@@ -58,7 +60,8 @@ _reference `services.tor.deploy.replicas` within `docker-compose.yml`_
 
 ```shell
 git clone https://github.com/joshhighet/multisocks
-docker compose --file multisocks/docker-compose.yml up --detach
+# add --detach at the end of the below command detatch the command from your existing session
+docker compose --file multisocks/docker-compose.yml up
 ```
 
 ## stats & obserability
