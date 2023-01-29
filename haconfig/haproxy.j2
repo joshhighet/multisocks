@@ -4,11 +4,10 @@ global
   log stdout format raw local0 info
 
 defaults
-  mode tcp
-  timeout client 10s
+  timeout client 60s
   timeout connect 5s
-  timeout server 10s
-  timeout http-request 10s
+  timeout server  60s
+  timeout http-request 60s
   log global
 
 frontend loadbalancer
