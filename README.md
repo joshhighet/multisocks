@@ -21,8 +21,8 @@ flowchart TB
     sclient[proxy client :8080]<-->front
     stat{{stats :1337}}-..->front
     front[haproxy]
-    style sclient fill:#f9f,stroke:#333,stroke-width:2px
-    style stat fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+    style stat stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+    style sclient stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
     subgraph scaler[x scaled instances]
         subgraph tor1 [tor]
         ctrl[controlport]
