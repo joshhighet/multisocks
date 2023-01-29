@@ -4,7 +4,7 @@ a simple load balanced torsocks service, a fork of the excellent [Iglesys347/cas
 
 creates an infinite number of backend tor circuits, leveraging haproxy to round-robin requests
 
-multisocks will expose a SOCKS5 proxy on `:8080` and a statistics report on haproxy at `:1337`
+multisocks will expose a SOCKS5 proxy on `:8080` and a statistics report on `:1337`
 
 ```mermaid
 flowchart TB
