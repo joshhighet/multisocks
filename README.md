@@ -51,7 +51,11 @@ docker compose --file multisocks/docker-compose.yml up --detach
 
 after bringing up the containerset - you will need to wait for tor to build circuits before the proxy will accept connections
 
-to view the status of haproxy, navigate to `your-multisocks-host:1337` in a browser
+## stats & obserability
+
+to view the status of haproxy, navigate to `your-multisocks-host:1337` in a browser. you should see the number of backends as defined in `.env` along with other useful metrics
+
+![haproxy stats, example](.github/ha-stats.png)
 
 ## debugging
 
