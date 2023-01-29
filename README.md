@@ -1,6 +1,6 @@
 # multisocks
 
-multisocks is a tool for running frameworks such as spiders or scanners against innfrastructure on the tor network (onion services).
+multisocks is a tool for running frameworks such as spiders or scanners against infrastructure (onion services) on the tor network.
 
 it can significantly cut-down load times for correctly scaled applications by doing the following
 
@@ -69,17 +69,41 @@ to view the status of haproxy, navigate to `your-multisocks-host:1337` in a brow
 
 ## debugging
 
+to trail logs, leverage `docker compose logs`
+
 ```shell
 cd multisocks
 docker compose logs --timestamps --follow
 ```
 
+to enter a shell in a running container, use `docker exec`.
+
+to view your container names use `docker ls ` - replace `multisocks-haproxy` accordingly
+
+```shell
+docker exec -it -u root multisocks-haproxy ash
+```
+
 ## testing
+
+this is a short script to check multisocks is running correctly. it assumes multisocks is running locally and makes ten requests to Cloudflare.
+
+you should see a new IP address in each response - this is assuming you have at-least ten circuits to leverage, as ten requests are made!
 
 ```shell
 for i in {1..10}
     curl -sLx socks5://localhost:8080 cloudflare.com/cdn-cgi/trace \
     | grep -Po '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b'
 done
+```
+
+to test against hidden services, simple replace the cloudflare URL with an onion service.
+
+to find some online onion services, go browse around or use the below for starters
+
+```shell
+curl -sL ransomwhat.telemetry.ltd/groups \
+| jq -r '.[].locations[] | select(.available==true) | .slug' \
+| head -n 10
 ```
 
