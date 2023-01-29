@@ -1,14 +1,33 @@
 #!/bin/ash
 # this checks if a tor circuit has been completed by polling the controlport
-# do not try this at home. the password for the controlport is included in the script - the hashed value within torrc
-telnet_out=$(echo -e "authenticate \"log4j2.enableJndiLookup\"\ngetinfo circuit-status\nquit" | nc ${3} 9051 )
-echo "checking - ${3}:9051"
+# it is used by haproxy to as a health check for the various backends
+# the password for the controlport is included in the script - the hashed value within torrc
+
+if [ -z "${3}" ]
+then
+    if [ -z "${1}" ]
+    then
+        hostaddr="localhost"
+    else
+        hostaddr=${1}
+    fi
+else
+    hostaddr=${3}
+fi
+
+if ! nc -z ${hostaddr} 9051 2>/dev/null
+then
+    echo "healthcheck: controlport (${hostaddr}:9051) is not accepting connections"
+    exit 1
+fi
+
+telnet_out=$(echo -e "authenticate \"log4j2.enableJndiLookup\"\ngetinfo circuit-status\nquit" | nc ${hostaddr} 9051 )
 echo "${telnet_out}" | grep -q 'BUILT'
 if [ $? -eq 0 ]
 then
-    echo "circuit built"
+    # echo "healthcheck: (${hostaddr}:9051) has built at-least one circuit"
     exit 0
 else
-    echo "no circuit"
+    echo "healthcheck: (${hostaddr}:9051) has not finished building any circuits"
     exit 1
 fi
