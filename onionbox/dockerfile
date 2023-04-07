@@ -1,0 +1,7 @@
+FROM python:3.6-alpine
+EXPOSE 6969
+LABEL org.opencontainers.image.source https://github.com/joshhighet/multisocks/onionbox
+RUN apk add build-base python3-dev linux-headers
+RUN pip3 install theonionbox
+COPY theonionbox.cfg /theonionbox.cfg
+ENTRYPOINT ["/usr/local/bin/theonionbox", "-c", "theonionbox.cfg"]
