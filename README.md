@@ -94,9 +94,8 @@ this is a short script to check multisocks is running correctly.
 > it assumes multisocks is running locally and makes ten requests to Cloudflare, returning the requested IP for each request
 
 ```shell
-for i in {1..10}
-    curl -sLx socks5://localhost:8080 cloudflare.com/cdn-cgi/trace \
-    | grep -Po '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b'
+for i in {1..10}; do
+    curl -sLx socks5://localhost:8080 cloudflare.com/cdn-cgi/trace | grep ip\=
 done
 ```
 
