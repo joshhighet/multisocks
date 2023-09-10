@@ -2,7 +2,7 @@ SocksPort 0.0.0.0:9050
 DataDirectory /var/lib/tor
 
 ## tracing
-# Log notice syslog
+Log notice syslog
 
 ## traffic mangling
 # SocksPolicy accept 172.17.0.0/16
