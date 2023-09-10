@@ -8,8 +8,8 @@ it can significantly cut-down load times for correctly scaled applications by do
 
 - creating a very large number of tor circuits
 - surfacing a single-ingress SOCKS5 proxy
-- adequatley load-balance backend connections
-- performing health-checks against each backend tor cirtuit
+- adequately load-balance backend connections
+- performing health-checks against each backend tor circuit
 - serving a load balancer monitoring dashboard
 
 _multisocks is a fork/derivative of the excellent [Iglesys347/castor](https://github.com/Iglesys347/castor)_
@@ -70,6 +70,14 @@ to view the status of haproxy, navigate to `your-multisocks-host:1337` in a brow
 
 ![haproxy stats, example](.github/ha-stats.png)
 
+to fetch state of each circuit you could leverage something similar to the below
+
+```shell
+watch -n 5 "curl -s 'http://localhost:1337/;csv' \
+| awk -F ',' '{print \$2 \" - \" \$18}' \
+| grep -v 'status\|FRONT\|BACK'"
+```
+
 ## debugging
 
 to trail logs, leverage `docker compose logs`
@@ -81,7 +89,7 @@ docker compose logs --timestamps --follow
 
 to enter a shell in a running container, use `docker exec`.
 
-to view your container names use `docker ls ` - replace `multisocks-haproxy` accordingly
+to view your container names use `docker ps ` - replace `multisocks-haproxy` accordingly
 
 ```shell
 docker exec -it -u root multisocks-haproxy ash
@@ -107,4 +115,20 @@ to test against hsdir resolutions, simply replace the cloudflare URL with an oni
 curl -sL ransomwhat.telemetry.ltd/groups \
 | jq -r '.[].locations[] | select(.available==true) | .slug' \
 | head -n 10
+```
+
+## notes
+
+the current health-check implementation leaves much room for improvement. it uses netcat to send an _authenticated_ telnet command `getinfo circuit-status`. an alternate could be to use stem, with something like the below
+
+```python
+import stem.control
+def is_circuit_built():
+    with stem.control.Controller.from_port(port=9051) as controller:
+        controller.authenticate()
+        circs = controller.get_circuits()
+        for circ in circs:
+            if circ.status == 'BUILT':
+                return True
+        return False
 ```
