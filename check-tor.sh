@@ -21,6 +21,10 @@ then
     exit 1
 fi
 
+# i dont quite know *why* this works, but it acts as a keepalive for the controlport...
+# https://github.com/joshhighet/multisocks/issues/1
+curl --silent --max-time 2 --socks5-hostname ${hostaddr}:9050 -I multisocks-haproxy-1:1337
+
 telnet_out=$(echo -e "authenticate \"log4j2.enableJndiLookup\"\ngetinfo circuit-status\nquit" | nc ${hostaddr} 9051 )
 echo "${telnet_out}" | grep -q 'BUILT'
 if [ $? -eq 0 ]
