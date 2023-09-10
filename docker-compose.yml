@@ -13,7 +13,7 @@ services:
       replicas: ${SOCKS:-5}
 
   haproxy:
-    image: haproxy:alpine
+    build: ./haproxy
     restart: always
     depends_on:
       tor:
@@ -25,7 +25,7 @@ services:
       - 1337:1337
     volumes:
       - haproxy_conf:/usr/local/etc/haproxy
-      - ./check-tor.sh:/usr/local/etc/haproxy/check-tor.sh
+      - ./haproxy/check-tor.sh:/usr/local/etc/haproxy/check-tor.sh
     networks:
       - net_tor
     

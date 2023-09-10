@@ -1,0 +1,4 @@
+FROM haproxy:alpine
+USER root
+RUN apk add --no-cache curl
+USER haproxy
