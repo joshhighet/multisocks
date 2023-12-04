@@ -11,15 +11,14 @@ def get_dockernet_hostnames():
     network = client.networks.get("net_tor")
     net_tor_id = network.attrs["Id"]
     containers = client.containers.list()
-    containers = [
-        container for container in containers
+    container_names = [
+        container.attrs['Name'][1:]
+        for container in containers
         if ("net_tor" in container.attrs["NetworkSettings"]["Networks"])
         and (container.attrs["NetworkSettings"]["Networks"]["net_tor"]["NetworkID"] == net_tor_id)
         and (container.attrs["Config"]["User"] == "tor")
     ]
-    dns = [container.attrs['NetworkSettings']['Networks']["net_tor"]['Aliases'][0]
-           for container in containers]
-    return dns
+    return container_names
 
 if __name__ == "__main__":
     cihosts = get_dockernet_hostnames()

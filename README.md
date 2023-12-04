@@ -132,3 +132,13 @@ def is_circuit_built():
                 return True
         return False
 ```
+
+to hot reload the haproxy configuration without having to re-establish tor circuits with a full rebuild or restart, you can run the below (replacing `multisocks-haproxy-1` if appropriate)
+
+```shell
+docker exec \
+multisocks-haproxy-1 haproxy \
+-f /usr/local/etc/haproxy/haproxy.cfg \
+-p /var/run/haproxy.pid \
+-sf $(cat /var/run/haproxy.pid)
+```
