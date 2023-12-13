@@ -18,7 +18,8 @@ def get_dockernet_hostnames():
         and (container.attrs["NetworkSettings"]["Networks"]["net_tor"]["NetworkID"] == net_tor_id)
         and (container.attrs["Config"]["User"] == "tor")
     ]
-    return container_names
+    sorted_container_names = sorted(container_names, key=lambda x: int(x.split('-')[-1]))
+    return sorted_container_names
 
 if __name__ == "__main__":
     cihosts = get_dockernet_hostnames()
