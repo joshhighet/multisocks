@@ -73,9 +73,8 @@ to view the status of haproxy, navigate to `your-multisocks-host:1337` in a brow
 to fetch state of each circuit you could leverage something similar to the below
 
 ```shell
-watch -n 5 "curl -s 'http://localhost:1337/;csv' \
-| awk -F ',' '{print \$2 \" - \" \$18}' \
-| grep -v 'status\|FRONT\|BACK'"
+curl -s 'http://multisocks:1337/;csv' \
+| sed 's/,/ ,/g' | column -t -s, | less -S
 ```
 
 ## debugging
@@ -116,6 +115,8 @@ curl -sL ransomwhat.telemetry.ltd/groups \
 | jq -r '.[].locations[] | select(.available==true) | .slug' \
 | head -n 10
 ```
+
+see [loadtest.py](loadtest.py) & [speedtest.sh](speedtest.sh) for more thorough examples
 
 ## notes
 
