@@ -13,6 +13,22 @@ services:
       replicas: ${SOCKS:-5}
     restart: on-failure
 
+  metrics:
+    build: ./metrics
+    networks:
+      - net_tor
+    ports:
+      - "8000:8000"
+    depends_on:
+      - tor
+    expose:
+      - 8000
+    deploy:
+      replicas: 1
+    restart: on-failure
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   haproxy:
     build: ./haproxy
     restart: always
