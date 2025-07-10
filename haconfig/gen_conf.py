@@ -1,4 +1,3 @@
-import os
 import docker
 import platform
 from jinja2 import Template
