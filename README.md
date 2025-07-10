@@ -53,6 +53,8 @@ if you do not define a number of Tor instances (ref `backends`) - it will defaul
 
 avoid defining more than `4095` backends - this is a haproxy limitation. to work around this, create a secondary backend group - do so referencing `backend tors` within [haproxy.j2](haconfig/haproxy.j2) and update the configuration template [haproxy.j2](haconfig/haproxy.j2) accordingly.
 
+a healthcheck is performed against each backend relay using haproxy's [external-check command](https://www.haproxy.com/documentation/haproxy-configuration-manual/latest/#4.2-external-check%20command)
+
 set the number of tor instances to be created by altering `SOCKS` within `.env`
 
 _reference `services.tor.deploy.replicas` within `docker-compose.yml`_
