@@ -1,4 +1,4 @@
-FROM python
+FROM python:3.13-alpine
 LABEL org.opencontainers.image.source https://github.com/joshhighet/multisocks
 WORKDIR /usr/app/
 RUN pip install docker jinja2
