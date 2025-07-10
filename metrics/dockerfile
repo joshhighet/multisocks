@@ -1,0 +1,16 @@
+FROM python:3.9-alpine
+LABEL org.opencontainers.image.source https://github.com/joshhighet/multisocks/tor
+
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    python3 \
+    py3-pip \
+    build-base \
+    docker-cli
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app /app
+COPY GeoLite2-City.mmdb /app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
