@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from stem import CircStatus
 from stem.control import Controller
 import geoip2.database
-import os
+import requests
+from io import StringIO
+import csv
 import docker
 
 app = FastAPI()
@@ -18,7 +20,7 @@ app.add_middleware(
 
 def get_tor_containers():
     client = docker.from_env()
-    containers = client.containers.list(filters={"ancestor": "multisocks-private-tor"})
+    containers = client.containers.list(filters={"ancestor": "multisocks-tor"})
     tor_hosts = []
     for container in containers:
         container_info = {
@@ -35,6 +37,34 @@ def get_tor_containers():
 def list_tor_hosts():
     tor_hosts = get_tor_containers()
     return tor_hosts
+
+@app.get("/haproxy-stats")
+def get_haproxy_stats():
+    try:
+        response = requests.get("http://haproxy:1337/;csv")
+        response.raise_for_status()
+        csv_data = StringIO(response.text)
+        reader = csv.DictReader(csv_data)
+        stats = [row for row in reader if row['# pxname'] == 'tors']  # Filter to 'tors' backend
+        return {"backends": stats}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch HAProxy stats: {str(e)}")
+    
+@app.get("/dashboard-data")
+def get_dashboard_data():
+    tor_hosts = get_tor_containers()
+    haproxy_stats = get_haproxy_stats()["backends"]
+    correlated = []
+    for host in tor_hosts:
+        matching_stats = next((s for s in haproxy_stats if s['svname'] == f"tor{host['hostname'].split('-')[-1]}"), {})
+        correlated.append({
+            "host": host,
+            "haproxy": {
+                "status": matching_stats.get('status', 'UNKNOWN'),
+                "current_sessions": matching_stats.get('scur', 0),
+            }
+        })
+    return {"data": correlated}
 
 @app.get("/tor-hosts/{host_id}/circuits")
 def get_tor_host_circuits(host_id: str):
@@ -98,5 +128,4 @@ def get_tor_host_circuits(host_id: str):
                 host_info["circuits"].append(circuit_info)
     except Exception as e:
         host_info["error"] = str(e)
-
     return host_info

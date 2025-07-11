@@ -3,3 +3,4 @@ geoip2
 fastapi
 uvicorn
 docker
+requests
