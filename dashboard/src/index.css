@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: 0 0% 100%;
+  --color-foreground: 222.2 84% 4.9%;
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 222.2 84% 4.9%;
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 222.2 84% 4.9%;
+  --color-primary: 221.2 83.2% 53.3%;
+  --color-primary-foreground: 210 40% 98%;
+  --color-secondary: 210 40% 96%;
+  --color-secondary-foreground: 222.2 84% 4.9%;
+  --color-muted: 210 40% 96%;
+  --color-muted-foreground: 215.4 16.3% 46.9%;
+  --color-accent: 210 40% 96%;
+  --color-accent-foreground: 222.2 84% 4.9%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 210 40% 98%;
+  --color-border: 214.3 31.8% 91.4%;
+  --color-input: 214.3 31.8% 91.4%;
+  --color-ring: 221.2 83.2% 53.3%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --color-background: 222.2 84% 4.9%;
+  --color-foreground: 210 40% 98%;
+  --color-card: 222.2 84% 4.9%;
+  --color-card-foreground: 210 40% 98%;
+  --color-popover: 222.2 84% 4.9%;
+  --color-popover-foreground: 210 40% 98%;
+  --color-primary: 217.2 91.2% 59.8%;
+  --color-primary-foreground: 222.2 84% 4.9%;
+  --color-secondary: 217.2 32.6% 17.5%;
+  --color-secondary-foreground: 210 40% 98%;
+  --color-muted: 217.2 32.6% 17.5%;
+  --color-muted-foreground: 215 20.2% 65.1%;
+  --color-accent: 217.2 32.6% 17.5%;
+  --color-accent-foreground: 210 40% 98%;
+  --color-destructive: 0 62.8% 30.6%;
+  --color-destructive-foreground: 210 40% 98%;
+  --color-border: 217.2 32.6% 17.5%;
+  --color-input: 217.2 32.6% 17.5%;
+  --color-ring: 224.3 76.3% 94.1%;
+}
+
+* {
+  border-color: hsl(var(--color-border));
+}
+
+body {
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions for dark mode */
+.card, .border, .bg-muted, .bg-muted/50 {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--color-muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--color-muted-foreground));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--color-foreground));
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hover effects */
+.hover\:bg-muted\/50:hover {
+  background-color: hsl(var(--color-muted) / 0.5);
+}
+
+/* Status colors for dark mode */
+.text-green-600 {
+  color: rgb(22 163 74);
+}
+
+.dark .text-green-600 {
+  color: rgb(34 197 94);
+}
+
+.text-red-500 {
+  color: rgb(239 68 68);
+}
+
+.dark .text-red-500 {
+  color: rgb(248 113 113);
+}
+
+.text-yellow-500 {
+  color: rgb(234 179 8);
+}
+
+.dark .text-yellow-500 {
+  color: rgb(250 204 21);
+}
+
+.text-blue-600 {
+  color: rgb(37 99 235);
+}
+
+.dark .text-blue-600 {
+  color: rgb(59 130 246);
+}
+
+.text-purple-600 {
+  color: rgb(147 51 234);
+}
+
+.dark .text-purple-600 {
+  color: rgb(168 85 247);
+}
+
+.text-cyan-600 {
+  color: rgb(8 145 178);
+}
+
+.dark .text-cyan-600 {
+  color: rgb(34 211 238);
+}
+
+.text-orange-600 {
+  color: rgb(234 88 12);
+}
+
+.dark .text-orange-600 {
+  color: rgb(251 146 60);
+}
+
+.text-emerald-600 {
+  color: rgb(5 150 105);
+}
+
+.dark .text-emerald-600 {
+  color: rgb(16 185 129);
+}
