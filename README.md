@@ -68,14 +68,14 @@ docker compose --file multisocks/docker-compose.yml up
 
 ## stats & obserability
 
-to view the status of haproxy, navigate to `your-multisocks-host:1337` in a browser. you should see the number of backends as defined in `.env` along with other useful metrics
+to view the status of haproxy, navigate to `http://localhost:1337` in a browser. you should see the number of backends as defined in your environment along with other useful metrics
 
 ![haproxy stats, example](.github/ha-stats.png)
 
 to fetch state of each circuit you could leverage something similar to the below
 
 ```shell
-curl -s 'http://multisocks:1337/;csv' \
+curl -s 'http://localhost:1337/;csv' \
 | sed 's/,/ ,/g' | column -t -s, | less -S
 ```
 
@@ -119,6 +119,29 @@ curl -sL ransomwhat.telemetry.ltd/groups \
 ```
 
 see [loadtest.py](loadtest.py) & [speedtest.sh](speedtest.sh) for more thorough examples
+
+## deployment
+
+copy `env.example` to `.env` and customise
+
+```shell
+cp env.example .env
+# edit .env with your domain/ports
+```
+
+download GeoLite2 db for location data (optional)
+
+```shell
+# create account at https://dev.maxmind.com/geoip/geoip2/geolite2/
+# download GeoLite2-City.mmdb and place in metrics/
+```
+
+start services
+
+```shell
+docker compose up -d
+# set `ALLOWED_ORIGINS` to your domain in `.env`
+```
 
 ## notes
 
