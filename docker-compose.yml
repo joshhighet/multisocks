@@ -21,11 +21,24 @@ services:
       - tor
     expose:
       - 8000
-    deploy:
-      replicas: 1
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   haproxy:
     build: ./haproxy
@@ -55,6 +68,17 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock
     networks:
       - net_tor
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "3000:3000"
+    depends_on:
+      - metrics
+    networks:
+      - net_tor
+    environment:
+      - VITE_API_URL=http://metrics:8000
 
 volumes:
   haproxy_conf:
