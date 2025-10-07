@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
+import { ToastProvider } from './components/ui/toast'
 import { SystemOverview } from './components/SystemOverview'
 import { NetworkTraffic } from './components/NetworkTraffic'
 import { CircuitMonitor } from './components/CircuitMonitor'
@@ -198,7 +199,9 @@ function Dashboard() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Dashboard />
+      <ToastProvider>
+        <Dashboard />
+      </ToastProvider>
     </QueryClientProvider>
   )
 }

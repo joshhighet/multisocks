@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
+import { Button } from './ui/button'
 import type { DashboardData } from '../types'
 import { formatBytes } from '../lib/utils'
 import { 
@@ -10,7 +11,12 @@ import {
   Zap,
   Clock,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Play,
+  Pause,
+  RotateCcw,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -29,9 +35,14 @@ interface TrafficDataPoint {
 export function NetworkTraffic({ data }: NetworkTrafficProps) {
   const [trafficHistory, setTrafficHistory] = useState<TrafficDataPoint[]>([])
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set())
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'1m' | '5m' | '15m' | '1h'>('5m')
 
   // Simulate real-time traffic updates
   useEffect(() => {
+    if (isPaused) return
+
     const interval = setInterval(() => {
       const now = Date.now()
       const newPoint: TrafficDataPoint = {
@@ -51,7 +62,7 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [data.summary])
+  }, [data.summary, isPaused])
 
   const currentTraffic = trafficHistory[trafficHistory.length - 1] || {
     bytesIn: data.summary.totalBytesIn,
@@ -67,14 +78,34 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
   const sessionsRate = currentTraffic.sessions - previousTraffic.sessions
   const latencyChange = currentTraffic.latency - previousTraffic.latency
 
+  const toggleMetricExpansion = (metric: string) => {
+    const newExpanded = new Set(expandedMetrics)
+    if (newExpanded.has(metric)) {
+      newExpanded.delete(metric)
+    } else {
+      newExpanded.add(metric)
+    }
+    setExpandedMetrics(newExpanded)
+  }
+
+  const resetTrafficData = () => {
+    setTrafficHistory([])
+  }
+
   return (
     <div className="space-y-6">
-      {/* Real-time Traffic Metrics */}
+      {/* Real-time Traffic Metrics with Controls */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className={isAnimating ? 'animate-pulse' : ''}>
+        <Card className={`hover:shadow-md transition-all cursor-pointer ${isAnimating ? 'animate-pulse' : ''}`} onClick={() => toggleMetricExpansion('bytesIn')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Data In</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+              {expandedMetrics.has('bytesIn') ? 
+                <ChevronDown className="h-3 w-3" /> : 
+                <ChevronRight className="h-3 w-3" />
+              }
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
@@ -84,13 +115,25 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
               <ArrowDownRight className="h-3 w-3 mr-1" />
               {formatBytes(bytesInRate)}/s
             </div>
+            {expandedMetrics.has('bytesIn') && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <div>Peak: {formatBytes(Math.max(...trafficHistory.map(t => t.bytesIn), data.summary.totalBytesIn))}</div>
+                <div>Avg: {formatBytes(trafficHistory.reduce((sum, t) => sum + t.bytesIn, 0) / Math.max(trafficHistory.length, 1))}</div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className={isAnimating ? 'animate-pulse' : ''}>
+        <Card className={`hover:shadow-md transition-all cursor-pointer ${isAnimating ? 'animate-pulse' : ''}`} onClick={() => toggleMetricExpansion('bytesOut')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Data Out</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              {expandedMetrics.has('bytesOut') ? 
+                <ChevronDown className="h-3 w-3" /> : 
+                <ChevronRight className="h-3 w-3" />
+              }
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
@@ -100,13 +143,25 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
               <ArrowUpRight className="h-3 w-3 mr-1" />
               {formatBytes(bytesOutRate)}/s
             </div>
+            {expandedMetrics.has('bytesOut') && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <div>Peak: {formatBytes(Math.max(...trafficHistory.map(t => t.bytesOut), data.summary.totalBytesOut))}</div>
+                <div>Avg: {formatBytes(trafficHistory.reduce((sum, t) => sum + t.bytesOut, 0) / Math.max(trafficHistory.length, 1))}</div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className={isAnimating ? 'animate-pulse' : ''}>
+        <Card className={`hover:shadow-md transition-all cursor-pointer ${isAnimating ? 'animate-pulse' : ''}`} onClick={() => toggleMetricExpansion('sessions')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-muted-foreground" />
+              {expandedMetrics.has('sessions') ? 
+                <ChevronDown className="h-3 w-3" /> : 
+                <ChevronRight className="h-3 w-3" />
+              }
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
@@ -115,13 +170,25 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
             <div className="flex items-center text-xs text-muted-foreground">
               {sessionsRate > 0 ? '+' : ''}{sessionsRate} new
             </div>
+            {expandedMetrics.has('sessions') && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <div>Peak: {Math.max(...trafficHistory.map(t => t.sessions), data.summary.totalSessions).toLocaleString()}</div>
+                <div>Avg: {Math.round(trafficHistory.reduce((sum, t) => sum + t.sessions, 0) / Math.max(trafficHistory.length, 1)).toLocaleString()}</div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className={isAnimating ? 'animate-pulse' : ''}>
+        <Card className={`hover:shadow-md transition-all cursor-pointer ${isAnimating ? 'animate-pulse' : ''}`} onClick={() => toggleMetricExpansion('latency')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Latency</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              {expandedMetrics.has('latency') ? 
+                <ChevronDown className="h-3 w-3" /> : 
+                <ChevronRight className="h-3 w-3" />
+              }
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
@@ -132,9 +199,70 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
             }`}>
               {latencyChange > 0 ? '+' : ''}{latencyChange.toFixed(0)}ms
             </div>
+            {expandedMetrics.has('latency') && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <div>Peak: {Math.max(...trafficHistory.map(t => t.latency), data.summary.averageLatency).toFixed(0)}ms</div>
+                <div>Avg: {(trafficHistory.reduce((sum, t) => sum + t.latency, 0) / Math.max(trafficHistory.length, 1)).toFixed(0)}ms</div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Traffic Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Traffic Monitoring Controls
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPaused(!isPaused)}
+              >
+                {isPaused ? <Play className="h-4 w-4 mr-1" /> : <Pause className="h-4 w-4 mr-1" />}
+                {isPaused ? 'Resume' : 'Pause'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetTrafficData}
+              >
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Reset Data
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Time Range:</span>
+              <div className="flex gap-1">
+                {(['1m', '5m', '15m', '1h'] as const).map((range) => (
+                  <Button
+                    key={range}
+                    variant={selectedTimeRange === range ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedTimeRange(range)}
+                  >
+                    {range}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
+              <span className="text-sm text-muted-foreground">
+                {isPaused ? 'Paused' : 'Live Updates'}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Traffic Flow Visualization */}
       <Card>
@@ -192,8 +320,8 @@ export function NetworkTraffic({ data }: NetworkTrafficProps) {
 
             {/* Tor Hosts Distribution */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.torHosts.map((host, index) => (
-                <div key={host.id} className="flex items-center justify-between p-3 border rounded-lg">
+              {data.torHosts.map((host) => (
+                <div key={host.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full ${
                       host.error ? 'bg-red-500' : 

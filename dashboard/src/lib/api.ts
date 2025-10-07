@@ -1,87 +1,96 @@
-import type { TorHost, TorHostWithCircuits, HAProxyStats, SystemSummary, DashboardData } from '../types'
+import type { 
+  TorHost, 
+  TorHostWithCircuits, 
+  DashboardData 
+} from '../types'
 
-const API_BASE = 'http://localhost:8000'
-
-export class ApiClient {
+class ApiClient {
   private baseUrl: string
 
-  constructor(baseUrl: string = API_BASE) {
+  constructor(baseUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:8000') {
     this.baseUrl = baseUrl
   }
 
-  async getTorHosts(): Promise<TorHost[]> {
-    const response = await fetch(`${this.baseUrl}/tor-hosts`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch Tor hosts: ${response.statusText}`)
-    }
-    return response.json()
-  }
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    })
 
-  async getTorHostCircuits(hostId: string): Promise<TorHostWithCircuits> {
-    const response = await fetch(`${this.baseUrl}/tor-hosts/${hostId}/circuits`)
     if (!response.ok) {
-      throw new Error(`Failed to fetch circuits for host ${hostId}: ${response.statusText}`)
+      const error = await response.text()
+      throw new Error(`API request failed: ${response.status} ${error}`)
     }
-    return response.json()
-  }
 
-  async getHAProxyStats(): Promise<HAProxyStats[]> {
-    const response = await fetch(`${this.baseUrl}/haproxy-stats`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch HAProxy stats: ${response.statusText}`)
-    }
-    const data = await response.json()
-    return data.backends || []
+    return response.json()
   }
 
   async getDashboardData(): Promise<DashboardData> {
-    const response = await fetch(`${this.baseUrl}/dashboard-data`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch dashboard data: ${response.statusText}`)
-    }
-    return response.json()
+    return this.request<DashboardData>('/dashboard-data')
   }
 
-  async getAllCircuits(): Promise<TorHostWithCircuits[]> {
-    const hosts = await this.getTorHosts()
-    const circuitsPromises = hosts.map(host => this.getTorHostCircuits(host.id))
-    return Promise.all(circuitsPromises)
+  async getTorHosts(): Promise<TorHost[]> {
+    return this.request<TorHost[]>('/tor-hosts')
   }
 
-  calculateSummary(torHosts: TorHostWithCircuits[], haproxyStats: HAProxyStats[]): SystemSummary {
-    const totalCircuits = torHosts.reduce((sum, host) => sum + host.circuits.length, 0)
-    const activeCircuits = torHosts.reduce((sum, host) => 
-      sum + host.circuits.filter(circuit => circuit.purpose !== 'CLOSED').length, 0
-    )
+  async getTorHostCircuits(hostId: string): Promise<TorHostWithCircuits> {
+    return this.request<TorHostWithCircuits>(`/tor-hosts/${hostId}/circuits`)
+  }
 
-    const backendStats = haproxyStats.filter(stat => stat.svname === 'BACKEND')
-    const totalSessions = backendStats.reduce((sum, stat) => sum + (stat.stot || 0), 0)
-    const totalBytesIn = backendStats.reduce((sum, stat) => sum + (stat.bin || 0), 0)
-    const totalBytesOut = backendStats.reduce((sum, stat) => sum + (stat.bout || 0), 0)
+
+  // NEW MANAGEMENT METHODS
+
+  async rebuildHostCircuits(hostId: string): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(`/tor-hosts/${hostId}/rebuild-circuits`, {
+      method: 'POST',
+    })
+  }
+
+  async closeCircuit(circuitId: string, hostId: string): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(`/circuits/${circuitId}/close?host_id=${hostId}`, {
+      method: 'POST',
+    })
+  }
+
+  async rebuildAllCircuits(): Promise<{ success: boolean; results: Array<{ host_id: string; hostname: string; result: any }> }> {
+    return this.request<{ success: boolean; results: Array<{ host_id: string; hostname: string; result: any }> }>('/circuits/rebuild-all', {
+      method: 'POST',
+    })
+  }
+
+  async requestNewIdentity(hostId: string): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(`/tor-hosts/${hostId}/new-identity`, {
+      method: 'POST',
+    })
+  }
+
+  // WebSocket connection for real-time updates
+  connectWebSocket(onMessage: (data: any) => void): WebSocket {
+    const wsUrl = this.baseUrl.replace('http://', 'ws://').replace('https://', 'wss://')
+    const ws = new WebSocket(`${wsUrl}/ws`)
     
-    const serverStats = haproxyStats.filter(stat => 
-      stat.svname !== 'FRONTEND' && stat.svname !== 'BACKEND' && stat.status === 'UP'
-    )
-    const averageLatency = serverStats.length > 0 
-      ? serverStats.reduce((sum, stat) => sum + (stat.ttime || 0), 0) / serverStats.length
-      : 0
-
-    const healthyBackends = serverStats.length
-    const totalBackends = haproxyStats.filter(stat => 
-      stat.svname !== 'FRONTEND' && stat.svname !== 'BACKEND'
-    ).length
-
-    return {
-      totalCircuits,
-      activeCircuits,
-      totalSessions,
-      totalBytesIn,
-      totalBytesOut,
-      averageLatency,
-      healthyBackends,
-      totalBackends,
-      uptime: 0 // This would need to be calculated from container start times
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        onMessage(data)
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error)
+      }
     }
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error)
+    }
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed')
+    }
+
+    return ws
   }
 }
 

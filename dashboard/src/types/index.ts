@@ -1,6 +1,7 @@
 export interface TorHost {
   id: string
   ip_address: string
+  external_ip?: string
   hostname: string
   image: string
   state: string
