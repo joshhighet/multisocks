@@ -1,5 +1,5 @@
 FROM python:3.13-alpine
-LABEL org.opencontainers.image.source https://github.com/joshhighet/multisocks
+LABEL org.opencontainers.image.source https://github.com/joshhighet/multisocks/haconfig
 WORKDIR /usr/app/
 RUN pip install docker jinja2
 COPY haproxy.j2 /usr/app/haproxy.j2
