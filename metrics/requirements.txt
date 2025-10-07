@@ -1,6 +1,6 @@
 stem
 geoip2
-fastapi
-uvicorn
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
 docker
-requests
+requests[socks]
