@@ -122,25 +122,24 @@ see [loadtest.py](loadtest.py) & [speedtest.sh](speedtest.sh) for more thorough 
 
 ## deployment
 
-copy `env.example` to `.env` and customise
+copy `env.example` to `.env` and set your hostname
 
 ```shell
 cp env.example .env
-# edit .env with your domain/ports
+# edit .env - set HOSTNAME to your domain
 ```
 
 download GeoLite2 db for location data (optional)
 
 ```shell
 # create account at https://dev.maxmind.com/geoip/geoip2/geolite2/
-# download GeoLite2-City.mmdb and place in metrics/
+# download GeoLite2-City.mmdb and place in metrics/ directory
 ```
 
 start services
 
 ```shell
 docker compose up -d
-# set `ALLOWED_ORIGINS` to your domain in `.env`
 ```
 
 ## notes

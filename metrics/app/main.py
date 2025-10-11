@@ -23,7 +23,18 @@ logging.getLogger('stem').setLevel(logging.WARNING)
 
 app = FastAPI(title="multisocks Metrics API", version="1.0.0")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+hostname = os.getenv("ALLOWED_ORIGINS", "localhost")
+allowed_origins = [
+    f"http://{hostname}:3000",
+    f"http://{hostname}:5173", 
+    f"https://{hostname}:3000",
+    f"https://{hostname}:5173",
+    "http://localhost:3000",
+    "http://localhost:5173"
+]
+
+if hostname == "*":
+    allowed_origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,

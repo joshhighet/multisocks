@@ -7,8 +7,14 @@ import type {
 class ApiClient {
   private baseUrl: string
 
-  constructor(baseUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:8000') {
-    this.baseUrl = baseUrl
+  constructor(baseUrl?: string) {
+    if (baseUrl) {
+      this.baseUrl = baseUrl
+    } else {
+      const currentHost = window.location.hostname
+      const isHttps = window.location.protocol === 'https:'
+      this.baseUrl = `${isHttps ? 'https' : 'http'}://${currentHost}:8000`
+    }
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
