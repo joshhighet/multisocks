@@ -21,6 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger('stem').setLevel(logging.WARNING)
 
+APP_START = time.time()
 app = FastAPI(title="multisocks Metrics API", version="1.0.0")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 hostname = os.getenv("ALLOWED_ORIGINS", "localhost")
@@ -275,14 +276,22 @@ def get_tor_host_circuits(host_id: str):
     return host_info
 
 def calculate_summary(tor_hosts: List[Dict], haproxy_stats: List[Dict]) -> Dict[str, Any]:
+    # haproxy's CSV carries a per-proxy BACKEND aggregate row alongside each
+    # individual server. That row already holds the sum of the servers, so
+    # including it double-counts every total and inflates the backend count.
+    servers = [s for s in haproxy_stats if s.get('svname') not in ('BACKEND', 'FRONTEND')]
     total_circuits = sum(len(host.get('circuits', [])) for host in tor_hosts)
     active_circuits = sum(len([c for c in host.get('circuits', []) if c.get('purpose') != 'CLOSED']) for host in tor_hosts)
-    total_sessions = sum(stat.get('stot', 0) for stat in haproxy_stats)
-    total_bytes_in = sum(stat.get('bin', 0) for stat in haproxy_stats)
-    total_bytes_out = sum(stat.get('bout', 0) for stat in haproxy_stats)
-    average_latency = 999999  #TODO
-    healthy_backends = len([stat for stat in haproxy_stats if stat.get('status') == 'UP'])
-    total_backends = len(haproxy_stats)
+    total_sessions = sum(stat.get('stot', 0) for stat in servers)
+    total_bytes_in = sum(stat.get('bin', 0) for stat in servers)
+    total_bytes_out = sum(stat.get('bout', 0) for stat in servers)
+    # ctime is haproxy's average connect time in ms to each tor SOCKS listener,
+    # averaged over servers that have actually handled a session. Note this is
+    # proxy connect latency, not tor circuit latency.
+    timed = [stat for stat in servers if stat.get('stot', 0) > 0]
+    average_latency = round(sum(stat.get('ctime', 0) for stat in timed) / len(timed)) if timed else 0
+    healthy_backends = len([stat for stat in servers if stat.get('status') == 'UP'])
+    total_backends = len(servers)
     return {
         "totalCircuits": total_circuits,
         "activeCircuits": active_circuits,
@@ -292,7 +301,7 @@ def calculate_summary(tor_hosts: List[Dict], haproxy_stats: List[Dict]) -> Dict[
         "averageLatency": average_latency,
         "healthyBackends": healthy_backends,
         "totalBackends": total_backends,
-        "uptime": 0 #TODO
+        "uptime": round(time.time() - APP_START)
     }
 
 def rebuild_circuits_for_host(host_id: str):

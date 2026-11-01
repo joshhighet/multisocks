@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /dashboard
+    schedule: { interval: weekly }
+  - package-ecosystem: pip
+    directory: /metrics
+    schedule: { interval: weekly }
+  - package-ecosystem: docker
+    directories: ["/dashboard", "/metrics", "/tor", "/haproxy", "/haconfig"]
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }

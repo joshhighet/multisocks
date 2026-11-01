@@ -1,102 +1,55 @@
-import type { 
-  TorHost, 
-  TorHostWithCircuits, 
-  DashboardData 
-} from '../types'
+import type { DashboardData, TorHostWithCircuits } from '../types'
+
+interface Ack {
+  success: boolean
+  message?: string
+}
 
 class ApiClient {
-  private baseUrl: string
+  readonly baseUrl: string
 
   constructor(baseUrl?: string) {
     if (baseUrl) {
       this.baseUrl = baseUrl
     } else {
-      const currentHost = window.location.hostname
-      const isHttps = window.location.protocol === 'https:'
-      this.baseUrl = `${isHttps ? 'https' : 'http'}://${currentHost}:8000`
+      const protocol = window.location.protocol === 'https:' ? 'https' : 'http'
+      this.baseUrl = `${protocol}://${window.location.hostname}:8000`
     }
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
+  private async request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...init,
     })
-
     if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`API request failed: ${response.status} ${error}`)
+      throw new Error(`${response.status} ${await response.text()}`)
     }
-
-    return response.json()
+    return response.json() as Promise<T>
   }
 
-  async getDashboardData(): Promise<DashboardData> {
+  getDashboardData(): Promise<DashboardData> {
     return this.request<DashboardData>('/dashboard-data')
   }
 
-  async getTorHosts(): Promise<TorHost[]> {
-    return this.request<TorHost[]>('/tor-hosts')
-  }
-
-  async getTorHostCircuits(hostId: string): Promise<TorHostWithCircuits> {
+  getHostCircuits(hostId: string): Promise<TorHostWithCircuits> {
     return this.request<TorHostWithCircuits>(`/tor-hosts/${hostId}/circuits`)
   }
 
-
-  // NEW MANAGEMENT METHODS
-
-  async rebuildHostCircuits(hostId: string): Promise<{ success: boolean; message: string }> {
-    return this.request<{ success: boolean; message: string }>(`/tor-hosts/${hostId}/rebuild-circuits`, {
-      method: 'POST',
-    })
+  rebuildHostCircuits(hostId: string): Promise<Ack> {
+    return this.request<Ack>(`/tor-hosts/${hostId}/rebuild-circuits`, { method: 'POST' })
   }
 
-  async closeCircuit(circuitId: string, hostId: string): Promise<{ success: boolean; message: string }> {
-    return this.request<{ success: boolean; message: string }>(`/circuits/${circuitId}/close?host_id=${hostId}`, {
-      method: 'POST',
-    })
+  rebuildAllCircuits(): Promise<Ack> {
+    return this.request<Ack>('/circuits/rebuild-all', { method: 'POST' })
   }
 
-  async rebuildAllCircuits(): Promise<{ success: boolean; results: Array<{ host_id: string; hostname: string; result: any }> }> {
-    return this.request<{ success: boolean; results: Array<{ host_id: string; hostname: string; result: any }> }>('/circuits/rebuild-all', {
-      method: 'POST',
-    })
+  requestNewIdentity(hostId: string): Promise<Ack> {
+    return this.request<Ack>(`/tor-hosts/${hostId}/new-identity`, { method: 'POST' })
   }
 
-  async requestNewIdentity(hostId: string): Promise<{ success: boolean; message: string }> {
-    return this.request<{ success: boolean; message: string }>(`/tor-hosts/${hostId}/new-identity`, {
-      method: 'POST',
-    })
-  }
-
-  // WebSocket connection for real-time updates
-  connectWebSocket(onMessage: (data: any) => void): WebSocket {
-    const wsUrl = this.baseUrl.replace('http://', 'ws://').replace('https://', 'wss://')
-    const ws = new WebSocket(`${wsUrl}/ws`)
-    
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        onMessage(data)
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error)
-      }
-    }
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
-
-    ws.onclose = () => {
-      console.log('WebSocket connection closed')
-    }
-
-    return ws
+  closeCircuit(circuitId: string, hostId: string): Promise<Ack> {
+    return this.request<Ack>(`/circuits/${circuitId}/close?host_id=${hostId}`, { method: 'POST' })
   }
 }
 
