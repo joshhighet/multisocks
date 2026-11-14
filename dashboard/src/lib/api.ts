@@ -12,8 +12,7 @@ class ApiClient {
     if (baseUrl) {
       this.baseUrl = baseUrl
     } else {
-      const protocol = window.location.protocol === 'https:' ? 'https' : 'http'
-      this.baseUrl = `${protocol}://${window.location.hostname}:8000`
+      this.baseUrl = `${window.location.origin}/api`
     }
   }
 
