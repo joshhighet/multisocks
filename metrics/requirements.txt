@@ -30,7 +30,7 @@ frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
-geoip2==5.3.0
+geoip2==5.4.0
     # via -r requirements.in
 h11==0.16.0
     # via uvicorn
@@ -41,7 +41,7 @@ idna==3.20
     #   anyio
     #   requests
     #   yarl
-maxminddb==3.2.0
+maxminddb==3.3.0
     # via geoip2
 multidict==7.2.1
     # via
@@ -63,7 +63,7 @@ python-dotenv==1.2.4
     # via uvicorn
 pyyaml==6.0.3
     # via uvicorn
-requests==2.34.2
+requests[socks]==2.34.2
     # via
     #   -r requirements.in
     #   docker
@@ -74,7 +74,6 @@ stem==1.8.2
     # via -r requirements.in
 typing-extensions==4.16.0
     # via
-    #   anyio
     #   fastapi
     #   opentelemetry-api
     #   pydantic
@@ -88,7 +87,7 @@ urllib3==2.8.0
     # via
     #   docker
     #   requests
-uvicorn==0.54.0
+uvicorn[standard]==0.54.0
     # via -r requirements.in
 uvloop==0.23.0
     # via uvicorn
